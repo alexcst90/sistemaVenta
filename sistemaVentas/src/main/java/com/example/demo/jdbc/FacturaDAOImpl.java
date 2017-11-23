@@ -35,19 +35,20 @@ public class FacturaDAOImpl {
 			factvo.setEstado(rs.getString("estado"));
 			factvo.setNombre(rs.getString("nombre"));
 			factvo.setApellido(rs.getString("apellido"));
-			
+			factvo.setIdproducto(rs.getInt("idproducto"));
+			factvo.setIdcliente(rs.getLong("idcliente"));
 			return factvo;
 		}		
 	};
 	
 	public List<FacturaVO> findAllFacturas() throws SQLException{
-		List<FacturaVO> factvo = jdbcTemplate.query("select  fa.idfactura, fa.numero, df.cantidad, df.precioventa, fa.total,fa.estado, cl.nombre,cl.apellido from Factura as fa join DetalleFactura as df on fa.idfactura = df.idfactura join cliente as cl on fa.idcliente = cl.idcliente;", mapper);		
+		List<FacturaVO> factvo = jdbcTemplate.query("select  fa.idfactura, fa.numero,df.idproducto, df.cantidad, df.precioventa, fa.total,fa.estado,cl.idcliente, cl.nombre,cl.apellido from Factura as fa join DetalleFactura as df on fa.idfactura = df.idfactura join cliente as cl on fa.idcliente = cl.idcliente;", mapper);		
 		return factvo;
 	}
 	
 	public FacturaVO findById(Long id) {
 		try {
-			return jdbcTemplate.queryForObject("select  fa.idfactura, fa.numero, df.cantidad, df.precioventa, fa.total,fa.estado, cl.nombre,cl.apellido from Factura as fa join DetalleFactura as df on fa.idfactura = df.idfactura join cliente as cl on fa.idcliente = cl.idcliente where fa.idfactura = ?", new Object[] {id}, mapper);
+			return jdbcTemplate.queryForObject("select  fa.idfactura, fa.numero,df.idproducto, df.cantidad, df.precioventa, fa.total,fa.estado,cl.idcliente, cl.nombre,cl.apellido from Factura as fa join DetalleFactura as df on fa.idfactura = df.idfactura join cliente as cl on fa.idcliente = cl.idcliente where fa.idfactura = ?", new Object[] {id}, mapper);
 		}catch(Exception e) {
 			return null;
 		}
