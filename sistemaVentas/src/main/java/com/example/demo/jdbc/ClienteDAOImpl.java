@@ -22,8 +22,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import com.example.demo.entity.Cliente;
 import com.example.demo.entity.Producto;
 import com.example.demo.rest.ClienteService;
-import com.example.demo.util.CustomErrorType;
-
 @Component
 public class ClienteDAOImpl {
 

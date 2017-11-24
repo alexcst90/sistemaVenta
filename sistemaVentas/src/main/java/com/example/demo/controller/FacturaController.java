@@ -18,7 +18,9 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.example.demo.entity.Cliente;
+
+import com.example.demo.entity.DetalleFactura;
+import com.example.demo.entity.Factura;
 import com.example.demo.entity.FacturaVO;
 import com.example.demo.entity.Producto;
 import com.example.demo.rest.FacturaService;
@@ -34,7 +36,7 @@ public class FacturaController {
 	FacturaService facturaService;
 	
 	@RequestMapping(value="/facturas/", method = RequestMethod.GET)
-	public ResponseEntity<List<FacturaVO>> listFacturas(@RequestHeader String usuario, @RequestHeader String password){
+	public ResponseEntity<List<Factura>> listFacturas(@RequestHeader String usuario, @RequestHeader String password){
 		
 		final String uri = "http://localhost:8002/usuarios/login?usuario="+usuario+"&password="+password;
 		RestTemplate restTemplate = new RestTemplate();
@@ -47,17 +49,17 @@ public class FacturaController {
 			if(e instanceof HttpClientErrorException) {
 				HttpClientErrorException ex = (HttpClientErrorException) e;
 				if(ex.getStatusCode().equals(HttpStatus.FORBIDDEN)) {
-					return new ResponseEntity<List<FacturaVO>>(HttpStatus.INTERNAL_SERVER_ERROR);
+					return new ResponseEntity<List<Factura>>(HttpStatus.INTERNAL_SERVER_ERROR);
 				}
 			}
-			return new ResponseEntity<List<FacturaVO>>( HttpStatus.INTERNAL_SERVER_ERROR);
+			return new ResponseEntity<List<Factura>>( HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		
-		List<FacturaVO> facturavo = facturaService.findAllFacturas();
-		if(facturavo.isEmpty()) {
+		List<Factura> factura = facturaService.findAllFacturas();
+		if(factura.isEmpty()) {
 			return new ResponseEntity(HttpStatus.NO_CONTENT);
 		}		
-		return new ResponseEntity<List<FacturaVO>>(facturavo, HttpStatus.OK);		
+		return new ResponseEntity<List<Factura>>(factura, HttpStatus.OK);		
 	}
 
 	
@@ -74,20 +76,24 @@ public class FacturaController {
 		}
 		if(result.equals("Exitoso")) {
 			logger.info("Mostrando Factura con el id {}", id);
-			FacturaVO facturavo = facturaService.findById(id);
-			if(facturavo == null) {
+			Factura factura = facturaService.findById(id);
+			if(factura == null) {
 				logger.error("Factura con el ID {} no existe", id);
 				return new ResponseEntity(new CustomErrorType("Factura con el ID " + id + " no encontrada"), HttpStatus.NOT_FOUND);
 			}
-			return new ResponseEntity<FacturaVO>(facturavo, HttpStatus.OK);
+			return new ResponseEntity<Factura>(factura, HttpStatus.OK);
 		}else {
 			return new ResponseEntity<FacturaVO>( HttpStatus.FORBIDDEN);
 		}
 	}
 	@RequestMapping(value = "/facturas/", method = RequestMethod.POST)
-	public ResponseEntity<?> crearVenta(@RequestBody FacturaVO facturavo, UriComponentsBuilder ucBuilder, 
+	public ResponseEntity<?> crearVenta(@RequestBody DetalleFactura detalleFactura, UriComponentsBuilder ucBuilder, 
 								@RequestHeader String usuario, 	
-								@RequestHeader String password
+								@RequestHeader String password,
+								@RequestHeader Integer numero,
+								@RequestHeader Double total,
+								@RequestHeader Long idcliente,
+								@RequestHeader String estado
 								){
 		final String uri = "http://localhost:8002/usuarios/login?usuario="+usuario+"&password="+password;
 		RestTemplate restTemplate = new RestTemplate();
@@ -99,15 +105,21 @@ public class FacturaController {
 			e.printStackTrace();
 		}
 		if(result.equals("Exitoso")) {
-			logger.info("Insertando factura: {}", facturavo);
-			if(facturaService.isFacturaExist(facturavo)){
+			Factura factura = new Factura();
+			factura.setNumero(numero);
+			factura.setTotal(total);
+			factura.setIdcliente(idcliente);
+			factura.setEstado(estado);
+			
+			logger.info("Insertando factura: {}", factura);
+			if(facturaService.isFacturaExist(factura)){
 				logger.error("No se puede crear. Factura ya existe");
 				return new ResponseEntity(new CustomErrorType("No se puede crear. Factura ya existe."), HttpStatus.CONFLICT);
 			}else {
-				facturaService.crearFactura(facturavo);
+				facturaService.crearFactura(factura, detalleFactura);
 				HttpHeaders headers = new HttpHeaders();
 		        headers.setLocation(ucBuilder.path("/factura/facturas/{id}").
-		        		buildAndExpand(facturavo.getIdfactura()).toUri());
+		        		buildAndExpand(factura.getIdfactura()).toUri());
 		        return new ResponseEntity<String>(headers, HttpStatus.CREATED);
 			}
 		}
@@ -117,7 +129,7 @@ public class FacturaController {
 	
 	//Anular Factura
 	@RequestMapping(value="/facturas/{id}", method = RequestMethod.PUT)
-	public ResponseEntity<?> updateFacturaVO(@PathVariable("id") long id, @RequestBody FacturaVO facturavo, @RequestHeader String usuario, @RequestHeader String password){
+	public ResponseEntity<?> updateFacturaVO(@PathVariable("id") long id, @RequestBody DetalleFactura detalleFactura, @RequestHeader String usuario, @RequestHeader String password){
 		final String uri = "http://localhost:8002/usuarios/login?usuario="+usuario+"&password="+password;
 		RestTemplate restTemplate = new RestTemplate();
 		String result = null;
@@ -135,12 +147,12 @@ public class FacturaController {
 		return new ResponseEntity<List<Producto>>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		logger.info("Anulando factura con el id {}", id);
-		FacturaVO currentFactura = facturaService.findById(id);
+		Factura currentFactura = facturaService.findById(id);
 		if(currentFactura == null) {
 			logger.error("Imposible anular factura porque no existe");
 			return new ResponseEntity<Object>(new CustomErrorType("Unable to upate. factura with id " + id + " not found."),HttpStatus.NOT_FOUND);
 		}
 		facturaService.updateFactura(currentFactura);
 		return new ResponseEntity<Object>(new CustomErrorType("Factura con el id " + id + " anulada"),HttpStatus.OK);
-	}
+	}	
 }

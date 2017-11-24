@@ -7,6 +7,8 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.demo.entity.DetalleFactura;
+import com.example.demo.entity.Factura;
 import com.example.demo.entity.FacturaVO;
 import com.example.demo.jdbc.FacturaDAOImpl;
 
@@ -17,7 +19,7 @@ public class FactutaServiceImplement implements FacturaService{
 	FacturaDAOImpl facturaDao;
 	
 	@Override
-	public List<FacturaVO> findAllFacturas() {
+	public List<Factura> findAllFacturas() {
 		// TODO Auto-generated method stub
 		try {
 			return facturaDao.findAllFacturas();
@@ -29,27 +31,25 @@ public class FactutaServiceImplement implements FacturaService{
 	}
 
 	@Override
-	public FacturaVO findById(Long id) {
+	public Factura findById(Long id) {
 		// TODO Auto-generated method stub
 		return facturaDao.findById(id);
 	}
 
-	@Override
-	public boolean isFacturaExist(FacturaVO facturavo) {
+	public boolean isFacturaExist(Factura factura) {
 		// TODO Auto-generated method stub
-		return findById(facturavo.getIdfactura())!=null;
+		return findById(factura.getIdfactura())!=null;
 	}
 
 	@Override
-	public boolean crearFactura(FacturaVO facturavo) {
+	public boolean crearFactura(Factura factura, DetalleFactura detalleFactura) {
 		// TODO Auto-generated method stub
-		return facturaDao.crearFactura(facturavo);
+		return facturaDao.crearFactura(factura, detalleFactura);
 	}
 
 	@Override
-	public boolean updateFactura(FacturaVO factura) {
+	public boolean updateFactura(Factura factura) {
 		// TODO Auto-generated method stub
 		return facturaDao.anularFactura(factura);
 	}
-	
 }

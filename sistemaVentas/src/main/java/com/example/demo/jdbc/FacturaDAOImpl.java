@@ -4,6 +4,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Iterator;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,8 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 
+import com.example.demo.entity.DetalleFactura;
+import com.example.demo.entity.Factura;
 import com.example.demo.entity.FacturaVO;
 import com.example.demo.rest.FacturaService;
 
@@ -23,65 +26,70 @@ public class FacturaDAOImpl {
 	private JdbcTemplate jdbcTemplate;
 	FacturaService facturaService;
 	
-	RowMapper<FacturaVO> mapper = new RowMapper<FacturaVO>() {
-		public FacturaVO mapRow(ResultSet rs, int rowNum) throws SQLException{
+	RowMapper<Factura> mapper = new RowMapper<Factura>() {
+		public Factura mapRow(ResultSet rs, int rowNum) throws SQLException{
 			
-			FacturaVO factvo = new FacturaVO();
-			factvo.setIdfactura(rs.getLong("idfactura"));
-			factvo.setNumero(rs.getInt("numero"));
-			factvo.setCantidad(rs.getInt("cantidad"));
-			factvo.setPrecioVenta(rs.getDouble("precioVenta"));
-			factvo.setTotal(rs.getDouble("total"));
-			factvo.setEstado(rs.getString("estado"));
-			factvo.setNombre(rs.getString("nombre"));
-			factvo.setApellido(rs.getString("apellido"));
-			factvo.setIdproducto(rs.getInt("idproducto"));
-			factvo.setIdcliente(rs.getLong("idcliente"));
-			return factvo;
+			Factura factura = new Factura();
+			
+			
+			factura.setIdfactura(rs.getLong("idfactura"));
+			factura.setNumero(rs.getInt("numero"));
+			factura.setTotal(rs.getDouble("total"));
+			factura.setIdcliente(rs.getLong("idcliente"));
+			
+			return factura;
 		}		
 	};
 	
-	public List<FacturaVO> findAllFacturas() throws SQLException{
-		List<FacturaVO> factvo = jdbcTemplate.query("select  fa.idfactura, fa.numero,df.idproducto, df.cantidad, df.precioventa, fa.total,fa.estado,cl.idcliente, cl.nombre,cl.apellido from Factura as fa join DetalleFactura as df on fa.idfactura = df.idfactura join cliente as cl on fa.idcliente = cl.idcliente;", mapper);		
-		return factvo;
+	public List<Factura> findAllFacturas() throws SQLException{
+		//List<FacturaVO> factvo = jdbcTemplate.query("select  fa.idfactura, fa.numero,df.idproducto, df.cantidad, df.precioventa, fa.total,fa.estado,cl.idcliente, cl.nombre,cl.apellido from Factura as fa join DetalleFactura as df on fa.idfactura = df.idfactura join cliente as cl on fa.idcliente = cl.idcliente;", mapper);
+		List<Factura> factura = jdbcTemplate.query("select * from Factrua", mapper);
+		return factura;
 	}
 	
-	public FacturaVO findById(Long id) {
+	
+	public Factura findById(Long id) {
 		try {
-			return jdbcTemplate.queryForObject("select  fa.idfactura, fa.numero,df.idproducto, df.cantidad, df.precioventa, fa.total,fa.estado,cl.idcliente, cl.nombre,cl.apellido from Factura as fa join DetalleFactura as df on fa.idfactura = df.idfactura join cliente as cl on fa.idcliente = cl.idcliente where fa.idfactura = ?", new Object[] {id}, mapper);
+			//return jdbcTemplate.queryForObject("select  fa.idfactura, fa.numero,df.idproducto, df.cantidad, df.precioventa, fa.total,fa.estado,cl.idcliente, cl.nombre,cl.apellido from Factura as fa join DetalleFactura as df on fa.idfactura = df.idfactura join cliente as cl on fa.idcliente = cl.idcliente where fa.idfactura = ?", new Object[] {id}, mapper);
+			return jdbcTemplate.queryForObject("select * from Factura where idfactura = ?", new Object[] {id}, mapper);
 		}catch(Exception e) {
 			return null;
 		}
 	}
-	public boolean crearFactura(FacturaVO facturavo) {
+	public boolean crearFactura(Factura factura, DetalleFactura detalleFactura) {
 		final String sql = "insert into Factura(numero, total, estado, idcliente) values(?,?,?,?)";
 		KeyHolder holder = new GeneratedKeyHolder();
 	      jdbcTemplate.update((connection) ->{	        
 	                    PreparedStatement ps =  connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 	                    
-	                    ps.setLong(1, facturavo.getNumero());
-	                    ps.setDouble(2,facturavo.getTotal() );
-	                    ps.setString(3, facturavo.getEstado());
-	                    ps.setLong(4, facturavo.getIdcliente());
+	                    ps.setLong(1, factura.getNumero());
+	                    ps.setDouble(2,factura.getTotal() );
+	                    ps.setString(3, factura.getEstado());
+	                    ps.setLong(4, factura.getIdcliente());
 	                  
 	                    return ps;
 	      },holder);
+	      
+	    // final String sqlid = "select MAX(idfactura) as id from Factura";
+	     
+	     //List<Factura> factura1 = jdbcTemplate.query(sqlid, mapper);
+	    	 
 	     final String sql2 = "Insert into DetalleFactura(idfactura, cantidad, precioVenta, idproducto) values(?,?,?,?)";
 	     
 	      jdbcTemplate.update((connection) ->{	        
               PreparedStatement ps =  connection.prepareStatement(sql2, Statement.RETURN_GENERATED_KEYS);
               
-              ps.setLong(1, facturavo.getIdfactura());
-              ps.setDouble(2,facturavo.getCantidad() );
-              ps.setDouble(3, facturavo.getPrecioVenta());
-              ps.setLong(4, facturavo.getIdproducto());
+              ps.setLong(1, detalleFactura.getIdfactura());
+              ps.setDouble(2,detalleFactura.getCantidad() );
+              ps.setDouble(3, detalleFactura.getPrecioVenta());
+              ps.setLong(4, detalleFactura.getIdproducto());
             
               return ps;
 	      },holder);
 		return true;
 	}
 	
-	public boolean anularFactura(FacturaVO factura) {
+	public boolean anularFactura(Factura factura) {
 		try {
 			final String sql = "UPDATE Factura set estado = 'Anulado' where idfactura = ?";
 			int i = jdbcTemplate.update(sql,  new Object[] {factura.getIdfactura() });

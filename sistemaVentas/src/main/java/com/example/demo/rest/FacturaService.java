@@ -2,18 +2,21 @@ package com.example.demo.rest;
 
 import java.util.List;
 
+import com.example.demo.entity.DetalleFactura;
+import com.example.demo.entity.Factura;
 import com.example.demo.entity.FacturaVO;
 
 public interface FacturaService {
 
-	List<FacturaVO> findAllFacturas();
+	List<Factura> findAllFacturas();
 
-	FacturaVO findById(Long id);
+	Factura findById(Long id);
 
-	boolean isFacturaExist(FacturaVO facturavo);
+	boolean isFacturaExist(Factura factura);
 
-	boolean crearFactura(FacturaVO facturavo);
+	boolean crearFactura(Factura factura, DetalleFactura detalleFactura);
 
-	boolean updateFactura(FacturaVO currentFactura);
+	boolean updateFactura(Factura currentFactura);
+
 
 }

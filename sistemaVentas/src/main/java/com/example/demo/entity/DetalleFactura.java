@@ -2,9 +2,11 @@ package com.example.demo.entity;
 
 public class DetalleFactura {
 	private Long iddetalle;
+	private Integer idfactura;
 	private Integer precioVenta;
 	private Integer idproducto;
 	private Integer cantidad;
+	
 	public Long getIddetalle() {
 		return iddetalle;
 	}
@@ -29,4 +31,11 @@ public class DetalleFactura {
 	public void setCantidad(Integer cantidad) {
 		this.cantidad = cantidad;
 	}
+	public Integer getIdfactura() {
+		return idfactura;
+	}
+	public void setIdfactura(Integer idfactura) {
+		this.idfactura = idfactura;
+	}
+	
 }
