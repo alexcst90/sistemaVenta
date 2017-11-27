@@ -7,9 +7,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.example.demo.entity.DetalleFactura;
 import com.example.demo.entity.Factura;
-import com.example.demo.entity.FacturaVO;
 import com.example.demo.jdbc.FacturaDAOImpl;
 
 @Service("facturaService")
@@ -42,9 +40,9 @@ public class FactutaServiceImplement implements FacturaService{
 	}
 
 	@Override
-	public boolean crearFactura(Factura factura, DetalleFactura detalleFactura) {
+	public boolean crearFactura(Factura factura) {
 		// TODO Auto-generated method stub
-		return facturaDao.crearFactura(factura, detalleFactura);
+		return facturaDao.crearFactura(factura);
 	}
 
 	@Override

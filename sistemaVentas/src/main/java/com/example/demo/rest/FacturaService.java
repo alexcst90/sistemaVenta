@@ -14,7 +14,7 @@ public interface FacturaService {
 
 	boolean isFacturaExist(Factura factura);
 
-	boolean crearFactura(Factura factura, DetalleFactura detalleFactura);
+	boolean crearFactura(Factura factura);
 
 	boolean updateFactura(Factura currentFactura);
 

@@ -86,14 +86,13 @@ public class FacturaController {
 			return new ResponseEntity<FacturaVO>( HttpStatus.FORBIDDEN);
 		}
 	}
+	
+	
+	
 	@RequestMapping(value = "/facturas/", method = RequestMethod.POST)
-	public ResponseEntity<?> crearVenta(@RequestBody DetalleFactura detalleFactura, UriComponentsBuilder ucBuilder, 
+	public ResponseEntity<?> crearVenta(@RequestBody Factura factura, UriComponentsBuilder ucBuilder, 
 								@RequestHeader String usuario, 	
-								@RequestHeader String password,
-								@RequestHeader Integer numero,
-								@RequestHeader Double total,
-								@RequestHeader Long idcliente,
-								@RequestHeader String estado
+								@RequestHeader String password								
 								){
 		final String uri = "http://localhost:8002/usuarios/login?usuario="+usuario+"&password="+password;
 		RestTemplate restTemplate = new RestTemplate();
@@ -105,18 +104,13 @@ public class FacturaController {
 			e.printStackTrace();
 		}
 		if(result.equals("Exitoso")) {
-			Factura factura = new Factura();
-			factura.setNumero(numero);
-			factura.setTotal(total);
-			factura.setIdcliente(idcliente);
-			factura.setEstado(estado);
 			
 			logger.info("Insertando factura: {}", factura);
 			if(facturaService.isFacturaExist(factura)){
 				logger.error("No se puede crear. Factura ya existe");
 				return new ResponseEntity(new CustomErrorType("No se puede crear. Factura ya existe."), HttpStatus.CONFLICT);
 			}else {
-				facturaService.crearFactura(factura, detalleFactura);
+				facturaService.crearFactura(factura);
 				HttpHeaders headers = new HttpHeaders();
 		        headers.setLocation(ucBuilder.path("/factura/facturas/{id}").
 		        		buildAndExpand(factura.getIdfactura()).toUri());
@@ -129,7 +123,7 @@ public class FacturaController {
 	
 	//Anular Factura
 	@RequestMapping(value="/facturas/{id}", method = RequestMethod.PUT)
-	public ResponseEntity<?> updateFacturaVO(@PathVariable("id") long id, @RequestBody DetalleFactura detalleFactura, @RequestHeader String usuario, @RequestHeader String password){
+	public ResponseEntity<?> updateFacturaVO(@PathVariable("id") long id, @RequestBody Factura factura, @RequestHeader String usuario, @RequestHeader String password){
 		final String uri = "http://localhost:8002/usuarios/login?usuario="+usuario+"&password="+password;
 		RestTemplate restTemplate = new RestTemplate();
 		String result = null;
@@ -144,7 +138,7 @@ public class FacturaController {
 					return new ResponseEntity<FacturaVO>(HttpStatus.FORBIDDEN);
 				}
 		}
-		return new ResponseEntity<List<Producto>>(HttpStatus.INTERNAL_SERVER_ERROR);
+		return new ResponseEntity<List<Factura>>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		logger.info("Anulando factura con el id {}", id);
 		Factura currentFactura = facturaService.findById(id);

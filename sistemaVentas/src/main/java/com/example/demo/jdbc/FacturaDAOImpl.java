@@ -4,7 +4,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Iterator;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Component;
 
 import com.example.demo.entity.DetalleFactura;
 import com.example.demo.entity.Factura;
-import com.example.demo.entity.FacturaVO;
 import com.example.demo.rest.FacturaService;
 
 @Component
@@ -56,7 +54,7 @@ public class FacturaDAOImpl {
 			return null;
 		}
 	}
-	public boolean crearFactura(Factura factura, DetalleFactura detalleFactura) {
+	public boolean crearFactura(Factura factura) {
 		final String sql = "insert into Factura(numero, total, estado, idcliente) values(?,?,?,?)";
 		KeyHolder holder = new GeneratedKeyHolder();
 	      jdbcTemplate.update((connection) ->{	        
@@ -69,23 +67,24 @@ public class FacturaDAOImpl {
 	                  
 	                    return ps;
 	      },holder);
+	      //holder.getKeys().forEach((k,v)-> System.out.println("key:"+ k +  "value" + v));
+	      Long idf =  Long.valueOf(holder.getKeys().get("GENERATED_KEY").toString());
 	      
-	    // final String sqlid = "select MAX(idfactura) as id from Factura";
-	     
-	     //List<Factura> factura1 = jdbcTemplate.query(sqlid, mapper);
-	    	 
-	     final String sql2 = "Insert into DetalleFactura(idfactura, cantidad, precioVenta, idproducto) values(?,?,?,?)";
-	     
-	      jdbcTemplate.update((connection) ->{	        
-              PreparedStatement ps =  connection.prepareStatement(sql2, Statement.RETURN_GENERATED_KEYS);
-              
-              ps.setLong(1, detalleFactura.getIdfactura());
-              ps.setDouble(2,detalleFactura.getCantidad() );
-              ps.setDouble(3, detalleFactura.getPrecioVenta());
-              ps.setLong(4, detalleFactura.getIdproducto());
-            
-              return ps;
-	      },holder);
+	      for(DetalleFactura detalle: factura.getDetalleFactura()) {
+		    	
+	 	      final String sql2 = "Insert into DetalleFactura(idfactura, cantidad, precioVenta, idproducto) values(?,?,?,?)";
+	 	     
+	 	      jdbcTemplate.update((connection) ->{	        
+	               PreparedStatement ps =  connection.prepareStatement(sql2, Statement.RETURN_GENERATED_KEYS);
+	               
+	               ps.setLong(1, idf);
+	               ps.setDouble(2,detalle.getCantidad() );
+	               ps.setDouble(3, detalle.getPrecioVenta());
+	               ps.setLong(4, detalle.getIdproducto());
+	             
+	               return ps;
+	 	      },holder);
+	 	}
 		return true;
 	}
 	
